@@ -431,7 +431,7 @@ def main():
                                 'tipo_calculo_dos': 'PH_Proporciones', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
                                 'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
                             })
- tipo_calc_dos = st.session_state.get('tipo_calculo_dos')
+                   tipo_calc_dos = st.session_state.get('tipo_calculo_dos')
                 
                 # --- Resultados: IC Diferencia de Medias ---
                 if tipo_calc_dos == 'IC_Medias':
