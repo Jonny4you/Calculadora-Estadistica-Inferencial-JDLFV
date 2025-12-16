@@ -183,23 +183,23 @@ def main():
                             st.session_state['x_icp'] = x_exitos 
                             st.session_state['n_icp'] = n_total
 
-                # --- Lógica de inputs: Cálculo de Z y T-student ---
+                # --- Lógica de inputs: Cálculo de Z y T-student (CORREGIDO) ---
                 elif opcion_una == "Cálculo de Z y T-student (Estadísticos)":
-                    media_muestral = st.number_input("Media muestral (x̄)", value=50.0, key='media_zt')
-                    media_hipotesis = st.number_input("Media hipotética (μ₀)", value=48.0, key='mu_zt')
-                    desv_zt = st.number_input("Desviación estándar muestral (s)", value=5.0, key='s_zt')
-                    n_zt = st.number_input("Tamaño de la muestra (n)", min_value=1, value=25, key='n_zt')
+                    media_muestral = st.number_input("Media muestral (x̄)", value=50.0, key='media_zt_input')
+                    media_hipotesis = st.number_input("Media hipotética (μ₀)", value=48.0, key='mu_zt_input')
+                    desv_zt = st.number_input("Desviación estándar muestral (s)", value=5.0, key='s_zt_input')
+                    n_zt = st.number_input("Tamaño de la muestra (n)", min_value=1, value=25, key='n_zt_input')
                     
-                    metodo_zt = st.radio("Estadístico a calcular:", ["T-student (σ desconocida)", "Z (n grande o σ conocida)"], key='metodo_zt')
+                    metodo_zt = st.radio("Estadístico a calcular:", ["T-student (σ desconocida)", "Z (n grande o σ conocida)"], key='metodo_zt_radio')
 
-                    if st.button("Calcular Estadísticos"):
+                    if st.button("Calcular Estadísticos", key='btn_zt_calc'):
                         st.session_state['tipo_calculo_una'] = 'Z_T_Calc'
                         st.session_state['media_muestral_zt'] = media_muestral
                         st.session_state['media_hipotesis_zt'] = media_hipotesis
                         st.session_state['desv_zt'] = desv_zt
                         st.session_state['n_zt'] = n_zt
                         st.session_state['metodo_zt'] = metodo_zt
-                        
+                           
                 # --- Lógica de inputs: Tamaño de Muestra por Media ---
                 elif opcion_una == "Tamaño de Muestra por Media":
                     confianza_tm = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_tmm') / 100.0
