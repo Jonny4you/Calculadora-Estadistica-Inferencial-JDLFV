@@ -70,16 +70,20 @@ def main():
                 media = np.mean(datos)
                 mediana = np.median(datos)
                 
-                # --- Lógica de la MODA CORREGIDA ---
+                # --- Lógica de la MODA CORREGIDA (Versión Definitiva) ---
+                # stats.mode retorna un objeto ModeResult. Usamos keepdims=False para compatibilidad.
                 moda_res = stats.mode(datos, keepdims=False)
                 
-                if len(moda_res.mode) == 0:
+                # Convertimos el resultado a un array de NumPy para asegurar que tenga la propiedad len()
+                moda_array = np.atleast_1d(moda_res.mode)
+                
+                if len(moda_array) == 0 or np.all(np.isnan(moda_array)):
                     moda = "No hay moda (datos únicos o dispersos)"
-                elif len(moda_res.mode) == 1:
-                    moda = f"{moda_res.mode[0]:,.4f}"
+                elif len(moda_array) == 1:
+                    moda = f"{moda_array[0]:,.4f}"
                 else:
-                    # En caso de moda múltiple (e.g., [1, 1, 5, 5])
-                    moda_valores = ", ".join([f"{m:,.4f}" for m in moda_res.mode])
+                    # En caso de moda múltiple
+                    moda_valores = ", ".join([f"{m:,.4f}" for m in moda_array])
                     moda = f"Múltiple: {moda_valores}"
                 
                 # Creación de la tabla de resultados
