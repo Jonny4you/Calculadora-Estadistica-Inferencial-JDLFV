@@ -347,7 +347,7 @@ def main():
                 st.subheader("Resultados de Dos Poblaciones (6ta Pestaña)")
                 
                 # Verificación robusta del estado
-                           with calc_dos:
+            with calc_dos:
                 opcion_dos = st.selectbox(
                     "Selecciona el Cálculo:",
                     [
