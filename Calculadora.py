@@ -343,12 +343,6 @@ def main():
             # Sub-pestañas para cálculo (5ta Pestaña) y resultados (6ta Pestaña)
             calc_dos, result_dos = st.tabs(["Calculadora (5ta Pestaña)", "Resultados (6ta Pestaña)"])
 
-            
-                                })
-                            else:
-                                st.error("Error: Los inputs de Proporciones no se han cargado correctamente.")
-
-
             with result_dos:
                 st.subheader("Resultados de Dos Poblaciones (6ta Pestaña)")
                 
