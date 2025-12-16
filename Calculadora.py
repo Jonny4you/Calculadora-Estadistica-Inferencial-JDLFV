@@ -152,16 +152,20 @@ def main():
 
                 # --- Lógica de inputs: IC de la Media ---
                 elif opcion_una == "Intervalo de Confianza de la Media":
-                    media_m = st.number_input("Media muestral (x̄)", value=50.0, key='media_icm')
-                    desv_std = st.number_input("Desviación estándar de la muestra (s)", value=10.0, key='desv_icm')
-                    n = st.number_input("Tamaño de la muestra (n)", min_value=2, value=30, key='n_icm')
-                    confianza = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icm') / 100.0
-                    if st.button("Calcular Intervalo (Media)"):
+                    # Usamos claves terminadas en '_input' o '_slider' para evitar conflictos con las claves de guardado.
+                    media_m = st.number_input("Media muestral (x̄)", value=50.0, key='media_icm_input')
+                    desv_std = st.number_input("Desviación estándar de la muestra (s)", value=10.0, key='desv_icm_input')
+                    n = st.number_input("Tamaño de la muestra (n)", min_value=2, value=30, key='n_icm_input')
+                    confianza = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icm_slider') / 100.0
+                    
+                    if st.button("Calcular Intervalo (Media)", key='btn_icm_calc'):
                         st.session_state['tipo_calculo_una'] = 'IC_Media'
+                        # Almacenamos directamente los valores leídos
                         st.session_state['confianza_icm'] = confianza
                         st.session_state['n_icm'] = n
                         st.session_state['media_icm'] = media_m
                         st.session_state['desv_icm'] = desv_std
+
                 
                 # --- Lógica de inputs: IC de una Proporción ---
                 elif opcion_una == "Intervalo de Confianza de una Proporción":
