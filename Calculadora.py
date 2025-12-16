@@ -343,7 +343,17 @@ def main():
             # Sub-pestañas para cálculo (5ta Pestaña) y resultados (6ta Pestaña)
             calc_dos, result_dos = st.tabs(["Calculadora (5ta Pestaña)", "Resultados (6ta Pestaña)"])
 
-            with calc_dos:
+            
+                                })
+                            else:
+                                st.error("Error: Los inputs de Proporciones no se han cargado correctamente.")
+
+
+            with result_dos:
+                st.subheader("Resultados de Dos Poblaciones (6ta Pestaña)")
+                
+                # Verificación robusta del estado
+                           with calc_dos:
                 opcion_dos = st.selectbox(
                     "Selecciona el Cálculo:",
                     [
@@ -385,34 +395,28 @@ def main():
                     x2 = st.number_input("Éxitos 2 (x₂)", min_value=0, value=30, key='x2_dos')
                     n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=1, value=70, key='n2_dos_p')
                 
-                # --- Lógica de cálculo y botones ---
+                # --- Lógica de cálculo y botones (CORREGIDA: Eliminada la verificación estricta) ---
 
                 if "Intervalo de Confianza" in opcion_dos:
                     confianza_icd = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icd') / 100.0
                     
                     if opcion_dos == "Diferencia de Medias (Intervalo de Confianza)":
                         if st.button("Calcular IC (Medias)", key='btn_ic_medias'):
-                            # Se verifica que los inputs de Medias existan antes de guardar
-                            if media1 is not None and desv1 is not None:
-                                st.session_state.update({
-                                    'tipo_calculo_dos': 'IC_Medias', 'confianza_icd': confianza_icd,
-                                    'media1': media1, 'desv1': desv1, 'n1': n1,
-                                    'media2': media2, 'desv2': desv2, 'n2': n2
-                                })
-                            else:
-                                st.error("Error: Los inputs de Medias no se han cargado correctamente. Asegúrate de que la opción 'Medias' esté seleccionada.")
+                            # Se guarda el estado de forma directa, confiando en que Streamlit leyó los inputs
+                            st.session_state.update({
+                                'tipo_calculo_dos': 'IC_Medias', 'confianza_icd': confianza_icd,
+                                'media1': media1, 'desv1': desv1, 'n1': n1,
+                                'media2': media2, 'desv2': desv2, 'n2': n2
+                            })
 
                     
                     elif opcion_dos == "Diferencia de Proporciones (Intervalo de Confianza)":
                         if st.button("Calcular IC (Proporciones)", key='btn_ic_props'):
-                            # Se verifica que los inputs de Proporciones existan antes de guardar
-                            if x1 is not None and n1 is not None:
-                                st.session_state.update({
-                                    'tipo_calculo_dos': 'IC_Proporciones', 'confianza_icd': confianza_icd,
-                                    'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
-                                })
-                            else:
-                                st.error("Error: Los inputs de Proporciones no se han cargado correctamente. Asegúrate de que la opción 'Proporciones' esté seleccionada.")
+                            # Se guarda el estado de forma directa, confiando en que Streamlit leyó los inputs
+                            st.session_state.update({
+                                'tipo_calculo_dos': 'IC_Proporciones', 'confianza_icd': confianza_icd,
+                                'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
+                            })
 
 
                 elif "Prueba de Hipótesis" in opcion_dos:
@@ -421,31 +425,19 @@ def main():
 
                     if opcion_dos == "Prueba de Hipótesis para Medias":
                         if st.button("Realizar PH (Medias)", key='btn_ph_medias'):
-                            if media1 is not None and desv1 is not None:
-                                st.session_state.update({
-                                    'tipo_calculo_dos': 'PH_Medias', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
-                                    'media1': media1, 'desv1': desv1, 'n1': n1,
-                                    'media2': media2, 'desv2': desv2, 'n2': n2
-                                })
-                            else:
-                                st.error("Error: Los inputs de Medias no se han cargado correctamente.")
+                            st.session_state.update({
+                                'tipo_calculo_dos': 'PH_Medias', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
+                                'media1': media1, 'desv1': desv1, 'n1': n1,
+                                'media2': media2, 'desv2': desv2, 'n2': n2
+                            })
                     
                     elif opcion_dos == "Prueba de Hipótesis para Proporciones":
                         if st.button("Realizar PH (Proporciones)", key='btn_ph_props'):
-                            if x1 is not None and n1 is not None:
-                                st.session_state.update({
-                                    'tipo_calculo_dos': 'PH_Proporciones', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
-                                    'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
-                                })
-                            else:
-                                st.error("Error: Los inputs de Proporciones no se han cargado correctamente.")
-
-
-            with result_dos:
-                st.subheader("Resultados de Dos Poblaciones (6ta Pestaña)")
-                
-                # Verificación robusta del estado
-                tipo_calc_dos = st.session_state.get('tipo_calculo_dos')
+                            st.session_state.update({
+                                'tipo_calculo_dos': 'PH_Proporciones', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
+                                'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
+                            })
+ tipo_calc_dos = st.session_state.get('tipo_calculo_dos')
                 
                 # --- Resultados: IC Diferencia de Medias ---
                 if tipo_calc_dos == 'IC_Medias':
