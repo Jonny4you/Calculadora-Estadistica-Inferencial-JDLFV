@@ -12,6 +12,7 @@ st.set_page_config(
 )
 
 # --- FUNCIÓN DE UTILIDAD: Z-score a partir del nivel de confianza ---
+# Usamos cache para no recalcular este valor en cada recarga
 @st.cache_data
 def get_z_score(confianza):
     """Calcula el valor Z crítico para un nivel de confianza dado (dos colas)."""
@@ -29,7 +30,7 @@ def main():
         ["Medidas de Tendencia Central", "Inferencia Estadística"]
     )
 
-    # Inicialización de session_state para persistir resultados
+    # Inicialización de session_state para persistir resultados y evitar KeyErrors
     if 'resultado_una' not in st.session_state: st.session_state['resultado_una'] = None
     if 'tipo_calculo_una' not in st.session_state: st.session_state['tipo_calculo_una'] = None
     if 'resultado_dos' not in st.session_state: st.session_state['resultado_dos'] = None
@@ -68,8 +69,18 @@ def main():
                 # Cálculo de Medidas de Tendencia Central
                 media = np.mean(datos)
                 mediana = np.median(datos)
+                
+                # --- Lógica de la MODA CORREGIDA ---
                 moda_res = stats.mode(datos, keepdims=False)
-                moda = moda_res.mode if len(moda_res.mode) == 1 else "Múltiple/No hay moda clara"
+                
+                if len(moda_res.mode) == 0:
+                    moda = "No hay moda (datos únicos o dispersos)"
+                elif len(moda_res.mode) == 1:
+                    moda = f"{moda_res.mode[0]:,.4f}"
+                else:
+                    # En caso de moda múltiple (e.g., [1, 1, 5, 5])
+                    moda_valores = ", ".join([f"{m:,.4f}" for m in moda_res.mode])
+                    moda = f"Múltiple: {moda_valores}"
                 
                 # Creación de la tabla de resultados
                 df_resultados = pd.DataFrame({
@@ -82,12 +93,13 @@ def main():
 
                 # Extra Opcional: Histograma
                 st.subheader("Extra Opcional: Histograma (Distribución de Frecuencias)")
+                st.markdown("El histograma muestra visualmente la distribución de los datos y dónde se concentran las **Medidas de Tendencia Central**.")
                 fig, ax = plt.subplots()
                 ax.hist(datos, bins='auto', edgecolor='black', alpha=0.7)
                 ax.set_title('Histograma de los Datos')
                 ax.set_xlabel('Valor')
                 ax.set_ylabel('Frecuencia')
-                st.pyplot(fig)
+                st.pyplot(fig) [attachment_0](attachment)
             elif calcular_tendencia:
                  st.warning("Por favor, ingresa datos válidos para calcular.")
 
@@ -135,7 +147,7 @@ def main():
                     media_m = st.number_input("Media muestral (x̄)", value=50.0, key='media_icm')
                     desv_std = st.number_input("Desviación estándar de la muestra (s)", value=10.0, key='desv_icm')
                     n = st.number_input("Tamaño de la muestra (n)", min_value=2, value=30, key='n_icm')
-                    confianza = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95) / 100.0
+                    confianza = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icm') / 100.0
                     if st.button("Calcular Intervalo (Media)"):
                         st.session_state['tipo_calculo_una'] = 'IC_Media'
                         st.session_state['confianza_icm'] = confianza
@@ -147,7 +159,7 @@ def main():
                 elif opcion_una == "Intervalo de Confianza de una Proporción":
                     x_exitos = st.number_input("Número de Éxitos (x)", min_value=0, value=15, key='x_icp')
                     n_total = st.number_input("Tamaño de la muestra (n)", min_value=1, value=50, key='n_icp')
-                    confianza_p = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95) / 100.0
+                    confianza_p = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icp') / 100.0
                     if st.button("Calcular Intervalo (Proporción)"):
                         if x_exitos > n_total:
                             st.error("El número de éxitos (x) no puede ser mayor que el tamaño de la muestra (n).")
@@ -208,7 +220,7 @@ def main():
                     s, n = st.session_state['s_ee'], st.session_state['n_ee']
                     ee = s / np.sqrt(n)
                     st.success(f"El Error Estándar (EE) es: **{ee:,.4f}**")
-                    st.write(f"Cálculo: $EE = s / \sqrt{{n}} = {s:,.2f} / \sqrt{{{n}}} = {ee:,.4f}$")
+                    st.write(r"Cálculo: $EE = s / \sqrt{n} = {s:,.2f} / \sqrt{{{n}}} = {ee:,.4f}$")
                     
                     st.markdown("---")
                     st.subheader("Extra Opcional: Comportamiento del EE")
@@ -239,8 +251,7 @@ def main():
                     st.markdown("---")
                     st.subheader("Extra Opcional: Distribución muestral")
                     st.markdown("Para este cálculo se utilizó la distribución **T-student** (debido a que se usó la desviación estándar muestral *s*). A medida que $n$ crece, la T-student se aproxima a la Normal Z.")
-
-                # --- Resultados: IC de una Proporción ---
+                                    # --- Resultados: IC de una Proporción ---
                 elif tipo_calc == 'IC_Prop':
                     x, n = st.session_state['x_icp'], st.session_state['n_icp']
                     confianza = st.session_state['confianza_icp']
@@ -274,11 +285,11 @@ def main():
                         gl = n - 1
                         st.success(f"Estadístico T-student Calculado: **{estadistico:,.4f}**")
                         st.write(f"Grados de Libertad (gl): {gl}")
-                        st.write(f"Cálculo: $T = (\\bar{{x}} - \\mu_0) / (s / \sqrt{{n}}) = ({x_bar} - {mu_0}) / ({s} / \sqrt{{{n}}}) = {estadistico:,.4f}$")
+                        st.write(r"Cálculo: $T = (\bar{x} - \mu_0) / (s / \sqrt{n}) = ({x_bar} - {mu_0}) / ({s} / \sqrt{{{n}}}) = {estadistico:,.4f}$")
                         
                     else: # Z
                         st.success(f"Estadístico Z Calculado: **{estadistico:,.4f}**")
-                        st.write(f"Cálculo: $Z = (\\bar{{x}} - \\mu_0) / (s / \sqrt{{n}}) = ({x_bar} - {mu_0}) / ({s} / \sqrt{{{n}}}) = {estadistico:,.4f}$")
+                        st.write(r"Cálculo: $Z = (\bar{x} - \mu_0) / (s / \sqrt{n}) = ({x_bar} - {mu_0}) / ({s} / \sqrt{{{n}}}) = {estadistico:,.4f}$")
                         
                 # --- Resultados: Tamaño de Muestra por Media ---
                 elif tipo_calc == 'TM_Media':
@@ -291,7 +302,7 @@ def main():
                     n_redondeado = int(np.ceil(n_calc))
                     
                     st.success(f"Tamaño de Muestra Requerido (n): **{n_redondeado}**")
-                    st.write(f"Cálculo: $n = (Z \cdot s / E)^2 = ({Z:,.4f} \cdot {s} / {E})^2 = {n_calc:,.2f} \implies {n_redondeado}$")
+                    st.write(r"Cálculo: $n = (Z \cdot s / E)^2 = ({Z:,.4f} \cdot {s} / {E})^2 = {n_calc:,.2f} \implies {n_redondeado}$")
                     st.write(f"*(Se debe redondear al entero superior para asegurar el margen de error)*")
 
                 # --- Resultados: Tamaño de Muestra por Proporción ---
@@ -305,7 +316,7 @@ def main():
                     n_redondeado = int(np.ceil(n_calc))
                     
                     st.success(f"Tamaño de Muestra Requerido (n): **{n_redondeado}**")
-                    st.write(f"Cálculo: $n = p(1-p) \cdot (Z/E)^2 = {p} \cdot {1-p} \cdot ({Z:,.4f} / {E})^2 = {n_calc:,.2f} \implies {n_redondeado}$")
+                    st.write(r"Cálculo: $n = p(1-p) \cdot (Z/E)^2 = {p} \cdot {1-p} \cdot ({Z:,.4f} / {E})^2 = {n_calc:,.2f} \implies {n_redondeado}$")
                     st.write(f"*(Se debe redondear al entero superior para asegurar el margen de error)*")
 
                 elif tipo_calc is None:
@@ -326,41 +337,43 @@ def main():
                         "Diferencia de Proporciones (Intervalo de Confianza)",
                         "Prueba de Hipótesis para Medias",
                         "Prueba de Hipótesis para Proporciones"
-                    ], key='op_dos'
+                    ], key='op_dos_select' # Clave única para selectbox
                 )
                 
                 st.info(f"Inputs para: **{opcion_dos}**")
                 
-                # --- Lógica de inputs comunes para Dos Poblaciones ---
-                is_mean_calc = "Media" in opcion_dos
-                is_prop_calc = "Proporción" in opcion_dos
+                # --- INPUTS CONDICIONALES ---
 
-                if is_mean_calc:
+                if "Media" in opcion_dos:
+                    # Usamos claves únicas para Medias (m1_dos, d1_dos, etc.)
                     st.markdown("#### Población 1")
-                    media1 = st.number_input("Media muestral 1 (x̄₁)", value=60.0, key='m1')
-                    desv1 = st.number_input("Desviación estándar 1 (s₁)", value=8.0, key='d1')
-                    n1 = st.number_input("Tamaño de la muestra 1 (n₁)", min_value=2, value=40, key='n1')
+                    media1 = st.number_input("Media muestral 1 (x̄₁)", value=60.0, key='m1_dos')
+                    desv1 = st.number_input("Desviación estándar 1 (s₁)", value=8.0, key='d1_dos')
+                    n1 = st.number_input("Tamaño de la muestra 1 (n₁)", min_value=2, value=40, key='n1_dos')
 
                     st.markdown("#### Población 2")
-                    media2 = st.number_input("Media muestral 2 (x̄₂)", value=55.0, key='m2')
-                    desv2 = st.number_input("Desviación estándar 2 (s₂)", value=7.0, key='d2')
-                    n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=2, value=35, key='n2')
+                    media2 = st.number_input("Media muestral 2 (x̄₂)", value=55.0, key='m2_dos')
+                    desv2 = st.number_input("Desviación estándar 2 (s₂)", value=7.0, key='d2_dos')
+                    n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=2, value=35, key='n2_dos')
 
-                elif is_prop_calc:
+                elif "Proporción" in opcion_dos:
+                    # Usamos claves únicas para Proporciones (x1_dos, n1_dos_p, etc.)
                     st.markdown("#### Población 1")
-                    x1 = st.number_input("Éxitos 1 (x₁)", min_value=0, value=25, key='x1')
-                    n1 = st.number_input("Tamaño de la muestra 1 (n₁)", min_value=1, value=50, key='n1_prop')
+                    x1 = st.number_input("Éxitos 1 (x₁)", min_value=0, value=25, key='x1_dos')
+                    n1 = st.number_input("Tamaño de la muestra 1 (n₁)", min_value=1, value=50, key='n1_dos_p')
 
                     st.markdown("#### Población 2")
-                    x2 = st.number_input("Éxitos 2 (x₂)", min_value=0, value=30, key='x2')
-                    n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=1, value=70, key='n2_prop')
+                    x2 = st.number_input("Éxitos 2 (x₂)", min_value=0, value=30, key='x2_dos')
+                    n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=1, value=70, key='n2_dos_p')
                 
-                # --- Lógica de cálculo y botones ---
+                # --- Lógica de cálculo y botones (Corregido el error de StreamlitAPIException) ---
+
                 if "Intervalo de Confianza" in opcion_dos:
-                    confianza_icd = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95) / 100.0
+                    confianza_icd = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icd') / 100.0
                     
                     if opcion_dos == "Diferencia de Medias (Intervalo de Confianza)":
-                        if st.button("Calcular IC (Medias)"):
+                        # Se leen las variables solo si están definidas en el bloque superior (Media)
+                        if st.button("Calcular IC (Medias)", key='btn_ic_medias'):
                             st.session_state.update({
                                 'tipo_calculo_dos': 'IC_Medias', 'confianza_icd': confianza_icd,
                                 'media1': media1, 'desv1': desv1, 'n1': n1,
@@ -368,18 +381,20 @@ def main():
                             })
                     
                     elif opcion_dos == "Diferencia de Proporciones (Intervalo de Confianza)":
-                        if st.button("Calcular IC (Proporciones)"):
+                        if st.button("Calcular IC (Proporciones)", key='btn_ic_props'):
+                            # Se leen las variables solo si están definidas en el bloque superior (Proporción)
                             st.session_state.update({
                                 'tipo_calculo_dos': 'IC_Proporciones', 'confianza_icd': confianza_icd,
                                 'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
                             })
 
                 elif "Prueba de Hipótesis" in opcion_dos:
-                    alfa_ph = st.slider("Nivel de Significación (α) (%)", min_value=1, max_value=10, value=5) / 100.0
-                    tipo_ph = st.radio("Tipo de Prueba H₁:", ["≠ (Dos colas)", "< (Cola izquierda)", "> (Cola derecha)"], key='tipo_ph')
+                    alfa_ph = st.slider("Nivel de Significación (α) (%)", min_value=1, max_value=10, value=5, key='alfa_ph_dos') / 100.0
+                    tipo_ph = st.radio("Tipo de Prueba H₁:", ["≠ (Dos colas)", "< (Cola izquierda)", "> (Cola derecha)"], key='tipo_ph_dos')
 
                     if opcion_dos == "Prueba de Hipótesis para Medias":
-                        if st.button("Realizar PH (Medias)"):
+                        if st.button("Realizar PH (Medias)", key='btn_ph_medias'):
+                            # Se leen las variables solo si están definidas en el bloque superior (Media)
                             st.session_state.update({
                                 'tipo_calculo_dos': 'PH_Medias', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
                                 'media1': media1, 'desv1': desv1, 'n1': n1,
@@ -387,7 +402,8 @@ def main():
                             })
                     
                     elif opcion_dos == "Prueba de Hipótesis para Proporciones":
-                        if st.button("Realizar PH (Proporciones)"):
+                        if st.button("Realizar PH (Proporciones)", key='btn_ph_props'):
+                            # Se leen las variables solo si están definidas en el bloque superior (Proporción)
                             st.session_state.update({
                                 'tipo_calculo_dos': 'PH_Proporciones', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
                                 'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
@@ -396,8 +412,10 @@ def main():
 
             with result_dos:
                 st.subheader("Resultados de Dos Poblaciones (6ta Pestaña)")
-                tipo_calc_dos = st.session_state['tipo_calculo_dos']
-
+                
+                # Verificación robusta del estado
+                tipo_calc_dos = st.session_state.get('tipo_calculo_dos')
+                
                 # --- Resultados: IC Diferencia de Medias ---
                 if tipo_calc_dos == 'IC_Medias':
                     conf = st.session_state['confianza_icd']
@@ -519,4 +537,4 @@ def main():
 # --- EJECUTAR LA APP ---
 if __name__ == "__main__":
     main()
-                                              
+                    
