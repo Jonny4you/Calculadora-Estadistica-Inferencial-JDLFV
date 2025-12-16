@@ -343,10 +343,6 @@ def main():
             # Sub-pestañas para cálculo (5ta Pestaña) y resultados (6ta Pestaña)
             calc_dos, result_dos = st.tabs(["Calculadora (5ta Pestaña)", "Resultados (6ta Pestaña)"])
 
-            with result_dos:
-                st.subheader("Resultados de Dos Poblaciones (6ta Pestaña)")
-                
-                # Verificación robusta del estado
             with calc_dos:
                 opcion_dos = st.selectbox(
                     "Selecciona el Cálculo:",
@@ -355,20 +351,18 @@ def main():
                         "Diferencia de Proporciones (Intervalo de Confianza)",
                         "Prueba de Hipótesis para Medias",
                         "Prueba de Hipótesis para Proporciones"
-                    ], key='op_dos_select' # Clave única para selectbox
+                    ], key='op_dos_select'
                 )
                 
                 st.info(f"Inputs para: **{opcion_dos}**")
                 
                 # --- INICIALIZACIÓN OBLIGATORIA DE VARIABLES LOCALES ---
-                # Esto garantiza que las variables x1, n1, etc., existan aunque no se rendericen sus inputs.
                 x1, n1, x2, n2 = None, None, None, None
                 media1, desv1, media2, desv2 = None, None, None, None
 
                 # --- INPUTS CONDICIONALES ---
 
                 if "Media" in opcion_dos:
-                    # Usamos claves únicas para Medias (m1_dos, d1_dos, etc.)
                     st.markdown("#### Población 1")
                     media1 = st.number_input("Media muestral 1 (x̄₁)", value=60.0, key='m1_dos')
                     desv1 = st.number_input("Desviación estándar 1 (s₁)", value=8.0, key='d1_dos')
@@ -380,7 +374,6 @@ def main():
                     n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=2, value=35, key='n2_dos')
 
                 elif "Proporción" in opcion_dos:
-                    # Usamos claves únicas para Proporciones (x1_dos, n1_dos_p, etc.)
                     st.markdown("#### Población 1")
                     x1 = st.number_input("Éxitos 1 (x₁)", min_value=0, value=25, key='x1_dos')
                     n1 = st.number_input("Tamaño de la muestra 1 (n₁)", min_value=1, value=50, key='n1_dos_p')
@@ -389,14 +382,13 @@ def main():
                     x2 = st.number_input("Éxitos 2 (x₂)", min_value=0, value=30, key='x2_dos')
                     n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=1, value=70, key='n2_dos_p')
                 
-                # --- Lógica de cálculo y botones (CORREGIDA: Eliminada la verificación estricta) ---
+                # --- Lógica de cálculo y botones ---
 
                 if "Intervalo de Confianza" in opcion_dos:
                     confianza_icd = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icd') / 100.0
                     
                     if opcion_dos == "Diferencia de Medias (Intervalo de Confianza)":
                         if st.button("Calcular IC (Medias)", key='btn_ic_medias'):
-                            # Se guarda el estado de forma directa, confiando en que Streamlit leyó los inputs
                             st.session_state.update({
                                 'tipo_calculo_dos': 'IC_Medias', 'confianza_icd': confianza_icd,
                                 'media1': media1, 'desv1': desv1, 'n1': n1,
@@ -406,7 +398,6 @@ def main():
                     
                     elif opcion_dos == "Diferencia de Proporciones (Intervalo de Confianza)":
                         if st.button("Calcular IC (Proporciones)", key='btn_ic_props'):
-                            # Se guarda el estado de forma directa, confiando en que Streamlit leyó los inputs
                             st.session_state.update({
                                 'tipo_calculo_dos': 'IC_Proporciones', 'confianza_icd': confianza_icd,
                                 'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
@@ -431,8 +422,14 @@ def main():
                                 'tipo_calculo_dos': 'PH_Proporciones', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
                                 'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
                             })
-                            tipo_calc_dos = st.session_state.get('tipo_calculo_dos')
-                    
+
+
+            with result_dos:
+                st.subheader("Resultados de Dos Poblaciones (6ta Pestaña)")
+                
+                # Verificación robusta del estado
+                tipo_calc_dos = st.session_state['tipo_calculo_dos']
+                
                 # --- Resultados: IC Diferencia de Medias ---
                 if tipo_calc_dos == 'IC_Medias':
                     conf = st.session_state['confianza_icd']
@@ -554,4 +551,3 @@ def main():
 # --- EJECUTAR LA APP ---
 if __name__ == "__main__":
     main()
-    
