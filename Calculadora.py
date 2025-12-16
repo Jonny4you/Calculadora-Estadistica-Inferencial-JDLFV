@@ -139,12 +139,16 @@ def main():
                 
                 # --- Lógica de inputs: Error Estándar de la Media ---
                 if opcion_una == "Error Estándar de la Media":
-                    s_ee = st.number_input("Desviación estándar muestral (s)", value=10.0, key='s_ee')
-                    n_ee = st.number_input("Tamaño de la muestra (n)", min_value=1, value=30, key='n_ee')
-                    if st.button("Calcular Error Estándar"):
+                    # Mantenemos las variables locales referenciadas a las claves del session_state para que Streamlit sepa que las debe leer en la re-ejecución
+                    s_ee = st.number_input("Desviación estándar muestral (s)", value=10.0, key='s_ee_input')
+                    n_ee = st.number_input("Tamaño de la muestra (n)", min_value=1, value=30, key='n_ee_input')
+                    
+                    if st.button("Calcular Error Estándar", key='btn_ee_calc'):
                         st.session_state['tipo_calculo_una'] = 'EE_Media'
+                        # Almacenamos directamente los valores leídos
                         st.session_state['s_ee'] = s_ee
                         st.session_state['n_ee'] = n_ee
+
 
                 # --- Lógica de inputs: IC de la Media ---
                 elif opcion_una == "Intervalo de Confianza de la Media":
