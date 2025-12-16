@@ -265,7 +265,7 @@ def main():
                     st.markdown("---")
                     st.subheader("Extra Opcional: Distribución muestral")
                     st.markdown("Para este cálculo se utilizó la distribución **T-student** (debido a que se usó la desviación estándar muestral *s*). A medida que $n$ crece, la T-student se aproxima a la Normal Z.")
-                                    # --- Resultados: IC de una Proporción ---
+                    # --- Resultados: IC de una Proporción ---
                 elif tipo_calc == 'IC_Prop':
                     x, n = st.session_state['x_icp'], st.session_state['n_icp']
                     confianza = st.session_state['confianza_icp']
@@ -336,7 +336,7 @@ def main():
                 elif tipo_calc is None:
                     st.info("El resultado del cálculo de 'Una Población' aparecerá aquí.")
 
-        # --- SUBSECCIÓN: DOS POBLACIONES (5ta Pestaña) ---
+               # --- SUBSECCIÓN: DOS POBLACIONES (5ta Pestaña) ---
         with tabs_poblacion[1]:
             st.subheader("Cálculos para Dos Poblaciones (Comparación) (5ta Pestaña)")
 
@@ -356,6 +356,11 @@ def main():
                 
                 st.info(f"Inputs para: **{opcion_dos}**")
                 
+                # --- INICIALIZACIÓN OBLIGATORIA DE VARIABLES LOCALES ---
+                # Esto garantiza que las variables x1, n1, etc., existan aunque no se rendericen sus inputs.
+                x1, n1, x2, n2 = None, None, None, None
+                media1, desv1, media2, desv2 = None, None, None, None
+
                 # --- INPUTS CONDICIONALES ---
 
                 if "Media" in opcion_dos:
@@ -380,27 +385,35 @@ def main():
                     x2 = st.number_input("Éxitos 2 (x₂)", min_value=0, value=30, key='x2_dos')
                     n2 = st.number_input("Tamaño de la muestra 2 (n₂)", min_value=1, value=70, key='n2_dos_p')
                 
-                # --- Lógica de cálculo y botones (Corregido el error de StreamlitAPIException) ---
+                # --- Lógica de cálculo y botones ---
 
                 if "Intervalo de Confianza" in opcion_dos:
                     confianza_icd = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icd') / 100.0
                     
                     if opcion_dos == "Diferencia de Medias (Intervalo de Confianza)":
-                        # Se leen las variables solo si están definidas en el bloque superior (Media)
                         if st.button("Calcular IC (Medias)", key='btn_ic_medias'):
-                            st.session_state.update({
-                                'tipo_calculo_dos': 'IC_Medias', 'confianza_icd': confianza_icd,
-                                'media1': media1, 'desv1': desv1, 'n1': n1,
-                                'media2': media2, 'desv2': desv2, 'n2': n2
-                            })
+                            # Se verifica que los inputs de Medias existan antes de guardar
+                            if media1 is not None and desv1 is not None:
+                                st.session_state.update({
+                                    'tipo_calculo_dos': 'IC_Medias', 'confianza_icd': confianza_icd,
+                                    'media1': media1, 'desv1': desv1, 'n1': n1,
+                                    'media2': media2, 'desv2': desv2, 'n2': n2
+                                })
+                            else:
+                                st.error("Error: Los inputs de Medias no se han cargado correctamente. Asegúrate de que la opción 'Medias' esté seleccionada.")
+
                     
                     elif opcion_dos == "Diferencia de Proporciones (Intervalo de Confianza)":
                         if st.button("Calcular IC (Proporciones)", key='btn_ic_props'):
-                            # Se leen las variables solo si están definidas en el bloque superior (Proporción)
-                            st.session_state.update({
-                                'tipo_calculo_dos': 'IC_Proporciones', 'confianza_icd': confianza_icd,
-                                'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
-                            })
+                            # Se verifica que los inputs de Proporciones existan antes de guardar
+                            if x1 is not None and n1 is not None:
+                                st.session_state.update({
+                                    'tipo_calculo_dos': 'IC_Proporciones', 'confianza_icd': confianza_icd,
+                                    'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
+                                })
+                            else:
+                                st.error("Error: Los inputs de Proporciones no se han cargado correctamente. Asegúrate de que la opción 'Proporciones' esté seleccionada.")
+
 
                 elif "Prueba de Hipótesis" in opcion_dos:
                     alfa_ph = st.slider("Nivel de Significación (α) (%)", min_value=1, max_value=10, value=5, key='alfa_ph_dos') / 100.0
@@ -408,20 +421,24 @@ def main():
 
                     if opcion_dos == "Prueba de Hipótesis para Medias":
                         if st.button("Realizar PH (Medias)", key='btn_ph_medias'):
-                            # Se leen las variables solo si están definidas en el bloque superior (Media)
-                            st.session_state.update({
-                                'tipo_calculo_dos': 'PH_Medias', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
-                                'media1': media1, 'desv1': desv1, 'n1': n1,
-                                'media2': media2, 'desv2': desv2, 'n2': n2
-                            })
+                            if media1 is not None and desv1 is not None:
+                                st.session_state.update({
+                                    'tipo_calculo_dos': 'PH_Medias', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
+                                    'media1': media1, 'desv1': desv1, 'n1': n1,
+                                    'media2': media2, 'desv2': desv2, 'n2': n2
+                                })
+                            else:
+                                st.error("Error: Los inputs de Medias no se han cargado correctamente.")
                     
                     elif opcion_dos == "Prueba de Hipótesis para Proporciones":
                         if st.button("Realizar PH (Proporciones)", key='btn_ph_props'):
-                            # Se leen las variables solo si están definidas en el bloque superior (Proporción)
-                            st.session_state.update({
-                                'tipo_calculo_dos': 'PH_Proporciones', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
-                                'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
-                            })
+                            if x1 is not None and n1 is not None:
+                                st.session_state.update({
+                                    'tipo_calculo_dos': 'PH_Proporciones', 'alfa_ph': alfa_ph, 'tipo_ph': tipo_ph,
+                                    'x1': x1, 'n1': n1, 'x2': x2, 'n2': n2
+                                })
+                            else:
+                                st.error("Error: Los inputs de Proporciones no se han cargado correctamente.")
 
 
             with result_dos:
@@ -551,4 +568,4 @@ def main():
 # --- EJECUTAR LA APP ---
 if __name__ == "__main__":
     main()
-                    
+    
