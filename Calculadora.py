@@ -169,16 +169,18 @@ def main():
                 
                 # --- Lógica de inputs: IC de una Proporción ---
                 elif opcion_una == "Intervalo de Confianza de una Proporción":
-                    x_exitos = st.number_input("Número de Éxitos (x)", min_value=0, value=15, key='x_icp')
-                    n_total = st.number_input("Tamaño de la muestra (n)", min_value=1, value=50, key='n_icp')
-                    confianza_p = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icp') / 100.0
-                    if st.button("Calcular Intervalo (Proporción)"):
+                    x_exitos = st.number_input("Número de Éxitos (x)", min_value=0, value=15, key='x_icp_input')
+                    n_total = st.number_input("Tamaño de la muestra (n)", min_value=1, value=50, key='n_icp_input')
+                    confianza_p = st.slider("Nivel de Confianza (%)", min_value=80, max_value=99, value=95, key='conf_icp_slider') / 100.0
+                    
+                    if st.button("Calcular Intervalo (Proporción)", key='btn_icp_calc'):
                         if x_exitos > n_total:
                             st.error("El número de éxitos (x) no puede ser mayor que el tamaño de la muestra (n).")
                         else:
                             st.session_state['tipo_calculo_una'] = 'IC_Prop'
                             st.session_state['confianza_icp'] = confianza_p
-                            st.session_state['x_icp'] = x_exitos
+                            # Almacenamos directamente los valores leídos
+                            st.session_state['x_icp'] = x_exitos 
                             st.session_state['n_icp'] = n_total
 
                 # --- Lógica de inputs: Cálculo de Z y T-student ---
