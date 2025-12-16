@@ -103,7 +103,7 @@ def main():
                 ax.set_title('Histograma de los Datos')
                 ax.set_xlabel('Valor')
                 ax.set_ylabel('Frecuencia')
-                st.pyplot(fig) [attachment_0](attachment)
+                st.pyplot(fig)
             elif calcular_tendencia:
                  st.warning("Por favor, ingresa datos válidos para calcular.")
 
