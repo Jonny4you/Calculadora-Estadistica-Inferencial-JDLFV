@@ -16,7 +16,7 @@ def get_t_critico(confianza, gl):
 
 # --- VISTA: TENDENCIA CENTRAL ---
 def seccion_tendencia_central():
-    st.header("1️⃣ Medidas de Tendencia Central")
+    st.header("🎯 Medidas de Tendencia Central")
     col1, col2 = st.columns([1, 1])
     with col1:
         datos_input = st.text_area("Ingresa datos (separados por espacio o coma):", height=150)
@@ -43,7 +43,7 @@ def seccion_tendencia_central():
 
 # --- VISTA: UNA POBLACIÓN ---
 def seccion_inferencia_1_pop():
-    st.header("🎯 Inferencia: Una Población")
+    st.header("👤 Inferencia: Una Población")
     opcion = st.selectbox("Selecciona el cálculo:", [
         "Error estándar de la media",
         "Intervalo de confianza de la media",
@@ -124,7 +124,7 @@ def seccion_inferencia_2_pops():
         st.subheader("Muestra 1")
         n1 = st.number_input("n1", value=30, key="n1")
         if "proporciones" in opcion.lower():
-            x1 = st.number_input("Éxitos x1", value=15, key="x1")
+            x1 = st.number_input("Éxitos x1", value=15.0, key="x1")
         else:
             m1 = st.number_input("Media x̄1", value=10.0, key="m1")
             s1 = st.number_input("Desv. Est. s1", value=2.0, key="s1")
@@ -133,7 +133,7 @@ def seccion_inferencia_2_pops():
         st.subheader("Muestra 2")
         n2 = st.number_input("n2", value=30, key="n2")
         if "proporciones" in opcion.lower():
-            x2 = st.number_input("Éxitos x2", value=20, key="x2")
+            x2 = st.number_input("Éxitos x2", value=20.0, key="x2")
         else:
             m2 = st.number_input("Media x̄2", value=12.0, key="m2")
             s2 = st.number_input("Desv. Est. s2", value=2.5, key="s2")
@@ -178,8 +178,8 @@ def main():
     menu = st.sidebar.radio("Menú:", ["Inicio", "Tendencia Central", "Una Población", "Dos Poblaciones"])
     
     if menu == "Inicio":
-        st.title("📊 Bienvenido")
-        st.write("Esta herramienta modular permite realizar análisis descriptivos e inferenciales de forma eficiente.")
+        st.title("🧮 Bienvenido")
+        st.write("Esta calculadora permite realizar análisis descriptivos e inferenciales de forma eficiente.")
         st.info("Selecciona una sección en el menú lateral para comenzar.")
     elif menu == "Tendencia Central":
         seccion_tendencia_central()
